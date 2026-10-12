@@ -22,3 +22,7 @@ export const authenticateUser = (email: string, password: string): Promise<Axios
 export const getEvents = (): Promise<Event[]> => {
     return api.get<Event[]>(`/events`).then((response) => response.data);
 };
+
+export const createEvent = (event: Event): Promise<AxiosResponse<Event>> => {
+    return api.post(`/events`, event);
+};

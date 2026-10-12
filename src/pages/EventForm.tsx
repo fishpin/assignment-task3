@@ -1,15 +1,21 @@
 import { useActionSheet } from '@expo/react-native-action-sheet';
 import { Feather } from '@expo/vector-icons';
+import { StackScreenProps } from '@react-navigation/stack';
 import * as ImagePicker from 'expo-image-picker';
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { Alert, Image, StyleSheet, Text, TextInput, View } from 'react-native';
 import { BorderlessButton, RectButton } from 'react-native-gesture-handler';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import 'react-native-get-random-values';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
+import { v4 as uuidv4 } from 'uuid';
 import BigButton from '../components/BigButton';
 import FormField from '../components/FormField';
 import * as Colors from '../constants/Colors';
+import { AuthenticationContext } from '../context/AuthenticationContext';
+import * as api from '../services/api';
 import { uploadImage } from '../services/imageApi';
+import { AppStackParamList } from '../types/Navigation';
 import { castToNumber, formatAMPM, formatBytes } from '../utils';
 
 interface UploadedImage {
@@ -18,7 +24,8 @@ interface UploadedImage {
     size: number;
 }
 
-export default function EventForm() {
+export default function EventForm({ navigation, route }: StackScreenProps<AppStackParamList, 'EventForm'>) {
+    const authenticationContext = useContext(AuthenticationContext);
     const { showActionSheetWithOptions } = useActionSheet();
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
@@ -68,7 +75,21 @@ export default function EventForm() {
             .catch(() => Alert.alert('Upload failed', 'The picture could not be uploaded. Please try again.'));
     };
 
-    const handleSave = () => {};
+    const handleSave = () => {
+        api.createEvent({
+            id: uuidv4(),
+            dateTime: (dateTime as Date).toISOString(),
+            description,
+            imageUrl: image?.url,
+            name,
+            organizerId: authenticationContext?.value.id as string,
+            position: route.params.position,
+            volunteersNeeded: castToNumber(volunteersNeeded),
+            volunteersIds: [],
+        })
+            .then(() => navigation.navigate('EventsMap'))
+            .catch(() => Alert.alert('Save failed', 'The event could not be saved. Please try again.'));
+    };
 
     return (
         <KeyboardAwareScrollView style={styles.container} contentContainerStyle={styles.content}>
