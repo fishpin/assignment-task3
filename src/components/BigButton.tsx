@@ -2,6 +2,7 @@ import React from 'react';
 import { Feather } from '@expo/vector-icons';
 import { StyleSheet, Text } from 'react-native';
 import { RectButton } from 'react-native-gesture-handler';
+import * as Colors from '../constants/Colors';
 
 interface BigButtonProps {
     label: string;
@@ -18,7 +19,7 @@ export default function BigButton(props: BigButtonProps) {
 
     return (
         <RectButton style={[styles.button, style]} onPress={onPress}>
-            {featherIconName && <Feather style={styles.icon} name={featherIconName} size={24} color="#FFF" />}
+            {featherIconName && <Feather style={styles.icon} name={featherIconName} size={24} color={Colors.WHITE} />}
             <Text style={styles.label}>{label}</Text>
         </RectButton>
     );
@@ -45,7 +46,7 @@ const styling = ({ color, disabled }: BigButtonProps) =>
 
         label: {
             fontFamily: 'Nunito_800ExtraBold',
-            color: '#FFF',
+            color: Colors.WHITE,
             fontSize: 15,
         },
     });

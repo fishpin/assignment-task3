@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
+import * as Colors from '../constants/Colors';
 
 const { Navigator, Screen } = createStackNavigator();
 
@@ -24,7 +25,7 @@ export default function Routes() {
                 <Navigator
                     screenOptions={{
                         headerShown: false,
-                        cardStyle: { backgroundColor: '#F2F3F5' },
+                        cardStyle: { backgroundColor: Colors.CARD_BACKGROUND },
                     }}
                 >
                     <Screen name="Login" component={Login} />
