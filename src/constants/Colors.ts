@@ -1,4 +1,5 @@
 export const BLUE = '#00A3FF';
+export const CYAN = '#15B6D6';
 export const NAVY = '#031A62';
 
 export const ORANGE = '#FF8700';
@@ -9,6 +10,8 @@ export const GREY = '#8FA7B2';
 export const GREY_LIGHT = '#D3E2E5';
 
 export const CARD_BACKGROUND = '#F2F3F5';
+export const HEADER = '#F9FAFC';
+export const HEADER_BORDER = '#DDE3F0';
 
 export const WHITE = '#FFFFFF';
 export const RED = '#FF0000';
