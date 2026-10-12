@@ -1,3 +1,4 @@
+import { StackScreenProps } from '@react-navigation/stack';
 import React, { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import MapView, { LatLng, PROVIDER_GOOGLE } from 'react-native-maps';
@@ -6,11 +7,14 @@ import BigButton from '../components/BigButton';
 import EventMarker from '../components/EventMarker';
 import * as Colors from '../constants/Colors';
 import * as MapSettings from '../constants/MapSettings';
+import { AppStackParamList } from '../types/Navigation';
 
-export default function SelectLocation() {
+export default function SelectLocation({ navigation }: StackScreenProps<AppStackParamList, 'SelectLocation'>) {
     const [position, setPosition] = useState<LatLng>();
 
-    const handleNext = () => {};
+    const handleNext = () => {
+        navigation.navigate('EventForm', { position: position as LatLng });
+    };
 
     return (
         <View style={styles.container}>

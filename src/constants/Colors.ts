@@ -9,6 +9,7 @@ export const SLATE_LIGHT = '#5C8599';
 export const GREY = '#8FA7B2';
 export const GREY_LIGHT = '#D3E2E5';
 
+export const BACKGROUND = '#EBF2F5';
 export const CARD_BACKGROUND = '#F2F3F5';
 export const HEADER = '#F9FAFC';
 export const HEADER_BORDER = '#DDE3F0';
