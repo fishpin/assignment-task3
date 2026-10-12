@@ -1,29 +1,72 @@
+import { useActionSheet } from '@expo/react-native-action-sheet';
 import { Feather } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
 import React, { useState } from 'react';
-import { StyleSheet, Text, TextInput, View } from 'react-native';
-import { RectButton } from 'react-native-gesture-handler';
+import { Alert, Image, StyleSheet, Text, TextInput, View } from 'react-native';
+import { BorderlessButton, RectButton } from 'react-native-gesture-handler';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import BigButton from '../components/BigButton';
 import FormField from '../components/FormField';
 import * as Colors from '../constants/Colors';
-import { castToNumber, formatAMPM } from '../utils';
+import { uploadImage } from '../services/imageApi';
+import { castToNumber, formatAMPM, formatBytes } from '../utils';
+
+interface UploadedImage {
+    url: string;
+    name: string;
+    size: number;
+}
 
 export default function EventForm() {
+    const { showActionSheetWithOptions } = useActionSheet();
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
     const [volunteersNeeded, setVolunteersNeeded] = useState('');
     const [dateTime, setDateTime] = useState<Date>();
     const [datePickerIsVisible, setDatePickerIsVisible] = useState(false);
+    const [image, setImage] = useState<UploadedImage>();
 
-    const formIsValid = !!name.trim() && !!description.trim() && castToNumber(volunteersNeeded) > 0 && !!dateTime;
+    const formIsValid =
+        !!name.trim() && !!description.trim() && castToNumber(volunteersNeeded) > 0 && !!dateTime && !!image;
 
     const handleConfirmDateTime = (date: Date) => {
         setDateTime(date);
         setDatePickerIsVisible(false);
     };
 
-    const handleAddPicture = () => {};
+    const handleAddPicture = () => {
+        showActionSheetWithOptions(
+            { options: ['Take Photo', 'Choose from Library', 'Cancel'], cancelButtonIndex: 2 },
+            (index) => {
+                if (index === 0) pickImage(true);
+                if (index === 1) pickImage(false);
+            }
+        );
+    };
+
+    const pickImage = async (useCamera: boolean) => {
+        const { granted } = useCamera
+            ? await ImagePicker.requestCameraPermissionsAsync()
+            : await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (!granted) {
+            Alert.alert('Permission required', 'Allow access in your device settings to add a picture.');
+            return;
+        }
+
+        const options = { mediaTypes: ImagePicker.MediaTypeOptions.Images, base64: true };
+        const result = useCamera
+            ? await ImagePicker.launchCameraAsync(options)
+            : await ImagePicker.launchImageLibraryAsync(options);
+        if (result.canceled) return;
+
+        uploadImage(result.assets[0].base64 as string)
+            .then((response) => {
+                const { url, size, image } = response.data.data;
+                setImage({ url, name: image.filename, size });
+            })
+            .catch(() => Alert.alert('Upload failed', 'The picture could not be uploaded. Please try again.'));
+    };
 
     const handleSave = () => {};
 
@@ -68,11 +111,24 @@ export default function EventForm() {
             </FormField>
 
             <FormField label="Picture">
-                <RectButton style={styles.inputButton} onPress={handleAddPicture}>
-                    <View style={styles.pictureInput}>
-                        <Feather name="plus" size={27} color={Colors.BLUE} />
+                {image ? (
+                    <View style={styles.uploadedPicture}>
+                        <Image style={styles.thumbnail} source={{ uri: image.url }} />
+                        <View style={styles.pictureDetails}>
+                            <Text style={styles.pictureText}>{image.name}</Text>
+                            <Text style={styles.pictureText}>{formatBytes(image.size)}</Text>
+                        </View>
+                        <BorderlessButton onPress={() => setImage(undefined)}>
+                            <Feather name="x" size={31} color={Colors.RED} />
+                        </BorderlessButton>
                     </View>
-                </RectButton>
+                ) : (
+                    <RectButton style={styles.inputButton} onPress={handleAddPicture}>
+                        <View style={styles.pictureInput}>
+                            <Feather name="plus" size={27} color={Colors.BLUE} />
+                        </View>
+                    </RectButton>
+                )}
             </FormField>
 
             <BigButton label="Save" color={Colors.BLUE} disabled={!formIsValid} onPress={handleSave} />
@@ -135,5 +191,32 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         opacity: 0.5,
+    },
+
+    uploadedPicture: {
+        backgroundColor: Colors.BLUE_LIGHT,
+        borderWidth: 1,
+        borderColor: Colors.BLUE,
+        borderRadius: 8,
+        padding: 8,
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+
+    thumbnail: {
+        width: 60,
+        height: 60,
+        borderRadius: 8,
+        marginRight: 8,
+    },
+
+    pictureDetails: {
+        flex: 1,
+    },
+
+    pictureText: {
+        color: Colors.SLATE_LIGHT,
+        fontFamily: 'Nunito_600SemiBold',
+        fontSize: 14,
     },
 });
